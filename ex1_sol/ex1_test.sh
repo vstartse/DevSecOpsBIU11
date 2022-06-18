@@ -21,7 +21,7 @@ adduser myuser --gecos "" --disabled-password
 echo "myuser:1234" | chpasswd
 
 
-printf "\n\nCase 1: No .token file in user's home dir\n"
+printf "\n\nCase 1: No .token file in user's home dir\n\n"
 
 echo '1234' | sudo -S sleep 1 && su -l myuser -c "touch .token" > $OUTPUT_FILE
 print_terminal_output
@@ -41,7 +41,7 @@ if grep -q ".token" "$OUTPUT_FILE"; then
   exit 1
 fi
 
-printf "Case 2: .token file with bad permissions\n"
+printf "Case 2: .token file with bad permissions\n\n"
 echo '1234' | sudo -S sleep 1 && su -l myuser -c "chmod 600 .token" > $OUTPUT_FILE
 print_terminal_output
 
@@ -50,7 +50,7 @@ if ! grep -q "Warning: .token file has too open permissions" "$OUTPUT_FILE"; the
   exit 1
 fi
 
-printf "Case 3: .token file with right permissions\n"
+printf "Case 3: .token file with right permissions\n\n"
 echo '1234' | sudo -S sleep 1 && su -l myuser -c "chmod 600 .token" > $OUTPUT_FILE
 print_terminal_output
 
