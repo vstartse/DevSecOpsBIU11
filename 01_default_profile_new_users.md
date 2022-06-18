@@ -39,7 +39,7 @@ When adding a new user with **adduser**, it will create the user's home director
 
 ## Submission 
 
-When you're done with above section, copy your solution, which mean the code changes you've done in `/etc/skel/.bash_profile` into `ex1_sol/customUserProfile.sh` in our shared repository.   
+When you're done with above section, copy your solution, which means the code changes you've done in `/etc/skel/.bash_profile` into `ex1_sol/customUserProfile.sh` file **in our shared repository**.   
 For example, if your `/etc/skel/.bash_profile` file looks like:
 
 ```shell
@@ -67,6 +67,7 @@ Then _push_ ![push](img/push.png) your solution to GitHub. Go to [action](https:
 ```text
 WELL DONE!!! you've passed all tests!
 ```
-Otherwise, your solution has to be fixed 
+Otherwise, your solution has to be fixed.
 
-## Well done!
+## Good luck
+Feel free to ask any questions! 
