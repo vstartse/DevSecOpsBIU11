@@ -1,0 +1,9 @@
+name: Students Exercises Tests
+on: [push]
+jobs:
+  BashEx1Test:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/heads/bash_ex1/')  }}
+    steps:
+      - run: cd ex1_sol && bash ex1_test.sh
+
