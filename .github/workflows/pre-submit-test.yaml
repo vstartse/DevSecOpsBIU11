@@ -8,6 +8,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run test cases
-      - run: |
+        run: |
           cd ex1_sol
           sudo bash ex1_test.sh
