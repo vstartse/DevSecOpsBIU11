@@ -6,17 +6,22 @@ chmod +x ./customUserProfile.sh
 
 OUTPUT_FILE=terminal_output
 function print_terminal_output {
-  printf "\nYour terminal output: \n------------------------------------\n$(cat $OUTPUT_FILE)\n------------------------------------\n\n"
+  printf "\nYour terminal output after login: \n------------------------------------\n$(cat $OUTPUT_FILE)\n------------------------------------\n\n"
 }
 
-# create myuser
+# delete myuser is exist
 rm -f -r /home/myuser
-userdel myuser
+if id -u myuser &> /dev/null; then
+  userdel myuser
+fi
+
+cat customUserProfile.sh >> /etc/skel/.bash_profile
+
 adduser myuser --gecos "" --disabled-password
 echo "myuser:1234" | chpasswd
 
 
-printf "Case 1: No .token file in user's home dir\n\n"
+printf "\n\nCase 1: No .token file in user's home dir\n"
 
 echo '1234' | sudo -S sleep 1 && su -l myuser -c "touch .token" > $OUTPUT_FILE
 print_terminal_output
@@ -36,7 +41,7 @@ if grep -q ".token" "$OUTPUT_FILE"; then
   exit 1
 fi
 
-printf "Case 2: .token file with bad permissions\n\n"
+printf "Case 2: .token file with bad permissions\n"
 echo '1234' | sudo -S sleep 1 && su -l myuser -c "chmod 600 .token" > $OUTPUT_FILE
 print_terminal_output
 
@@ -45,7 +50,7 @@ if ! grep -q "Warning: .token file has too open permissions" "$OUTPUT_FILE"; the
   exit 1
 fi
 
-printf "Case 3: .token file with right permissions\n\n"
+printf "Case 3: .token file with right permissions\n"
 echo '1234' | sudo -S sleep 1 && su -l myuser -c "chmod 600 .token" > $OUTPUT_FILE
 print_terminal_output
 

@@ -3,7 +3,11 @@ on: [push]
 jobs:
   BashEx1Test:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     if: ${{ startsWith(github.ref, 'refs/heads/bash_ex1/')  }}
     steps:
-      - run: cd ex1_sol && bash ex1_test.sh
-
+      - uses: actions/checkout@v2
+      - name: Run test cases
+      - run: |
+          cd ex1_sol
+          sudo bash ex1_test.sh
