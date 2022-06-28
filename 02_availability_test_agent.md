@@ -67,7 +67,7 @@ Your goal is to implement the loop body:
 
 ## Submission
 
-_Commit_ and _push_ `ex2_sol/availabilityAgent.sh` file **only**. Make sure your solution passing the pre-submit tests.
+_Commit_ and _push_ `ex2_sol/availabilityAgent.sh` file **only**. If you have displayed results in Grafana, commit and push also a screenshot of your graph under `ex2_sol/availabilityMonitor.png`.  Make sure your solution passing the pre-submit tests.
 
 
 ## Appendix - Display test results in Grafana
