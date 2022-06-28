@@ -11,3 +11,15 @@ jobs:
         run: |
           cd ex1_sol
           sudo bash ex1_test.sh
+
+  BashEx2Test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    if: ${{ startsWith(github.ref, 'refs/heads/bash_ex2/')  }}
+    container: influxdb:1.8.10
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run test cases
+        run: |
+          cd ex2_sol
+          bash ex2_test.sh
