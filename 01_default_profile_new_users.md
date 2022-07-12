@@ -4,7 +4,7 @@ In this exercise, you will implement a bash script which applies default Bash pr
 
 ## Preliminaries 
 
-Open (or clone if you didn't do it yet: Git -> clone...) [our shared git repo](https://github.com/alonitac/DevOpsMay22.git) in PyCharm and pull the repository ![Pull Button](img/pull.png) to get an up-to-date version of the repository. 
+Open (or clone if you didn't do it yet: Git -> clone...) [our shared git repo](https://github.com/alonitac/DevSecOpsBIU11.git) in PyCharm and pull the repository ![Pull Button](img/pull.png) to get an up-to-date version of the repository. 
 From Pycharm button right bar, create your own git branch (Git branches will be discussed later):
 
 ![New Branch](img/branch.png)

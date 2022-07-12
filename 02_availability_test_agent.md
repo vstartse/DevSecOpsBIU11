@@ -6,9 +6,9 @@ It sends the test results to an InfluxDB database and display results in Grafana
 
 ## Preliminaries
 
-1. Open (or clone if you didn't do it yet: Git -> clone...) [our shared git repo](https://github.com/alonitac/DevOpsMay22.git) in PyCharm, checkout branch `main` and pull the repository ![Pull Button](img/pull.png) to get an up-to-date version of branch main.
+1. Open (or clone if you didn't do it yet: Git -> clone...) [our shared git repo](https://github.com/alonitac/DevSecOpsBIU11.git) in PyCharm, checkout branch `main` and pull the repository ![Pull Button](img/pull.png) to get an up-to-date version of branch main.
 From Pycharm button right bar, create your own git branch `bash_ex2/<alias>`, while 
-`<alias>` is your name. e.g. `bash_ex1/alonit`. The branch name must start with `bash_ex2/`. Make sure your new branch is created from branch `main`.
+`<alias>` is your name. e.g. `bash_ex2/alonit`. The branch name must start with `bash_ex2/`. Make sure your new branch is created from branch `main`.
 
 2. [Install Docker on your Ubuntu](https://docs.docker.com/engine/install/ubuntu/) if needed.
 

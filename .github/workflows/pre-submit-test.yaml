@@ -23,3 +23,14 @@ jobs:
         run: |
           cd ex2_sol
           bash ex2_test.sh
+  BashEx3Test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    if: ${{ startsWith(github.ref, 'refs/heads/bash_ex3/')  }}
+    container: redis
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run test cases
+        run: |
+          cd ex3_sol
+          bash ex3_test.sh
