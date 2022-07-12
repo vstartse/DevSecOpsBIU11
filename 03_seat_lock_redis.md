@@ -21,7 +21,7 @@ In order to book a seat, first this seat must be locked by a customer. The lock 
    docker run --rm -p 6378:6379 --name some-redis redis
    ```  
    Your Redis server will be accessible in localhost:6378
-2. You are given a solution skeleton in `ex3_sol/seats.sh`. Your goal is to implement the functions `lock`, `release` and `book`. Read the documentation attached at the top of each function.
+2. You are given a solution skeleton in `ex3_sol/seat.sh`. Your goal is to implement the functions `lock`, `release` and `book`. Read the documentation attached at the top of each function.
 3. Here is an example of how your program should behave:
    ```
    >> ./seat.sh lock "Oedipus_the_King" "Andreas" 56
