@@ -29,8 +29,8 @@ chmod +x ./seat.sh
 echo 'Execute: ./seat.sh lock "Oedipus_the_King" "Andreas" 56'
 TEXT=$(./seat.sh lock "Oedipus_the_King" "Andreas" 56)
 
-if ! echo "$TEXT" | grep -q "Seat was locked"; then
-  echo "Expected 'Seat was locked' but found '$TEXT'"
+if ! echo "$TEXT" | grep -q "The seat was locked"; then
+  echo "Expected 'The seat was locked' but found '$TEXT'"
   exit 1
 fi
 
@@ -45,24 +45,24 @@ fi
 echo 'Execute: ./seat.sh release "Oedipus_the_King" "Andreas" 56'
 TEXT=$(./seat.sh release "Oedipus_the_King" "Andreas" 56)
 
-if ! echo "$TEXT" | grep -q "Seat was released"; then
-  echo "Expected 'Seat was released' but found '$TEXT'"
+if ! echo "$TEXT" | grep -q "The seat was released"; then
+  echo "Expected 'The seat was released' but found '$TEXT'"
   exit 1
 fi
 
 echo 'Execute: ./seat.sh book "Oedipus_the_King" "Marios" 56'
 TEXT=$(./seat.sh book "Oedipus_the_King" "Marios" 56)
 
-if ! echo "$TEXT" | grep -q "Booking failed, lock your seat before"; then
-  echo "Expected 'Booking failed, lock your seat before' but found '$TEXT'"
+if ! echo "$TEXT" | grep -q "Booking failed, please lock the seat before"; then
+  echo "Expected 'Booking failed, please lock the seat before' but found '$TEXT'"
   exit 1
 fi
 
 echo 'Execute: ./seat.sh lock "Oedipus_the_King" "Marios" 56'
 TEXT=$(./seat.sh lock "Oedipus_the_King" "Marios" 56)
 
-if ! echo "$TEXT" | grep -q "Seat was locked"; then
-  echo "Expected 'Seat was locked' but found '$TEXT'"
+if ! echo "$TEXT" | grep -q "The seat was locked"; then
+  echo "Expected 'The seat was locked' but found '$TEXT'"
   exit 1
 fi
 
