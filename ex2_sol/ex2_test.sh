@@ -19,7 +19,7 @@ chmod +x ./availabilityAgent.sh
 ./availabilityAgent.sh &
 
 # wait for the availability tests to be performed at least 3 times
-sleep 60
+sleep 35
 
 # get the tests data from influx
 DATA=$(curl -G 'http://localhost:8086/query?pretty=true' --data-urlencode "db=hosts_metrics" -H "Accept: application/csv" --data-urlencode "q=SELECT * FROM \"availability_test\"")
