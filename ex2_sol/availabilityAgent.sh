@@ -4,7 +4,7 @@ while true
 do
   while read TESTED_HOST; do
       RESULT=0
-      if ping -c 1 "$TESTED_HOST"
+      if ping -c 1 -W 2 "$TESTED_HOST"
       then
         RESULT=1
       fi
