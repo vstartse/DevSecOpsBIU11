@@ -6,7 +6,7 @@
 2. List the repo files by `ls -la ./myrepo`, note the `myrepo/.git` directory in which git stores all revisions and metadata. Never delete it.
 3. Create a new file in `myrepo` folder, and **commit** it:
 ```
-cd 
+cd myrepo
 echo "Hello world" >> hello
 git add hello
 git commit -m “add hello”
