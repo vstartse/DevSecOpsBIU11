@@ -218,5 +218,10 @@ git push origin main
 
 ## Fork a remote repo and add `upstream`
 
-TBD
+1. From GitHub, fork our [shared repo](https://github.com/alonitac/DevSecOpsBIU11.git).
+2. Clone it locally (using PyCharm is preferred).
+3. Add the original repo (a.k.a. `upstream`) as a remote by:
+```shell
+git remote add upstream https://github.com/alonitac/DevSecOpsBIU11.git
+```
 
