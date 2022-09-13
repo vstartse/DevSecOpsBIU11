@@ -1,6 +1,6 @@
 #!/bin/sh
 
-BASE_REPO_GITHUB_URL="https://raw.githubusercontent.com/alonitac/DevOpsMay22/main"
+BASE_REPO_GITHUB_URL="https://raw.githubusercontent.com/alonitac/DevSecOpsBIU11/main"
 APP_CODE_URL="$BASE_REPO_GITHUB_URL/git_ex/utils/app.py"
 APP_V1_CODE_URL="$BASE_REPO_GITHUB_URL/git_ex/utils/app_v1.py"
 APP_V2_CODE_URL="$BASE_REPO_GITHUB_URL/git_ex/utils/app_v2.py"
@@ -68,7 +68,7 @@ git checkout main
 # Resolve conflicts
 rm -f -r app.py
 
-if ! curl -kLSs $APP_CODE_URL -o app.py; then
+if ! curl -f $APP_CODE_URL -o app.py; then
   echo "Error: Unable retrieve app.py from GitHub"
   exit 1
 fi
@@ -77,7 +77,7 @@ git add app.py && git commit -m "add app.py"
 
 git checkout -b feature/version1
 rm -f -r app.py
-if ! curl -kLSs $APP_V1_CODE_URL -o app.py; then
+if ! curl -f $APP_V1_CODE_URL -o app.py; then
   echo "Error: Unable retrieve app.py from GitHub"
   exit 1
 fi
@@ -94,7 +94,7 @@ git -c user.name='John Doe' -c user.email='john.doe@microsoft.com' commit -m "Re
 git checkout main
 git checkout -b feature/version2
 rm -f -r app.py
-if ! curl -kLSs $APP_V2_CODE_URL -o app.py; then
+if ! curl -f $APP_V2_CODE_URL -o app.py; then
   echo "Error: Unable retrieve app.py from GitHub"
   exit 1
 fi
@@ -105,5 +105,5 @@ git checkout main
 
 echo
 echo
-echo "Repo initialized successfully "
+echo "Repo initialized successfully! go ahead with your solution..."
 echo
