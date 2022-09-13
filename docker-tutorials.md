@@ -213,7 +213,7 @@ In general, each container should do one thing and do it well. A few reasons:
 
 So, we will update our application to work like this:
 
-![](img/compose-app.png)
+![](img/multi-app.png)
 
 So, how do we allow one container to talk to another? Networking.
 **If two containers are on the same network, they can talk to each other. If they aren’t, they can’t.**
@@ -235,22 +235,22 @@ docker run -it --network my_app_net nicolaka/netshoot
 dig mysql
 ```
 And make sure that `mysql` is being resolved to the IP address of the container.
-5. Using the above `docker build` command, build a new image from the app `app-multi` directory (Dockerfile already there), run it by:
-```shell
-docker run --network my_app_net -p 8082:8080 app-multi:0.0.1
-```
+5. Using the above `docker build` command, build a new image from the app **located in branch `app-multi-containers`** (pick the Dockerfile from main branch if needed), run it using `docker run`. Things to notice:
+   1. Both containers should run on the `my_app_net` network.
+   2. Your app should listen to port `8082` in the host machine.
+   3. Your app is expecting to get two environment variables (search `os.environ` in )
 6. Test the app.
 
 ## Docker compose
 
 [Docker Compose](https://docs.docker.com/compose/) is a tool that was developed to help define and share multi-container applications. With Compose, we can create a YAML file to define the services and with a single command, can spin everything up or tear it all down.
-Let's deploy out app using Docker compose.
+Let's deploy our app using Docker compose.
 
 1. Make sure Docker compose is installed:
 ```shell
 docker-compose version
 ```
-2. At the root of the app project, create a file named `docker-compose.yml`.
+2. At the root of the app project, create a file named `docker-compose.yaml`.
 3. In the compose file, we’ll start off by defining the schema version. In most cases, it’s best to use the latest supported version.
 ```yaml
 version: "3.7"
@@ -262,15 +262,15 @@ version: "3.7"
 services:
 ```
 
-#### Define the `app-multi` service
+#### Define the `app` service
 
-5. Looking at the `docker run` command for the `app-multi`, let’s define the service entry and the image for the container. We can pick any name for the service.
+5. Take a look at the `docker run` command you've executed to run the Python app. Define the service entry and the image for the container accordingly:
 ```yaml
 version: "3.7"
 
 services:
-  app:
-    image: app-multi:0.0.1
+  app:  # we can choose any name for our service
+    image: <your-image-name-and-tag>
 ```
 6. Let’s migrate the `-p 8082:8080` part of the command by defining the ports for the service.
 ```yaml
@@ -278,7 +278,7 @@ version: "3.7"
 
 services:
   app:
-    image: app-multi:0.0.1
+    image: <your-image-name-and-tag>
     ports:
        - 8082:8080
 ```
@@ -309,7 +309,6 @@ services:
 volumes:
    mysql-data:
 ```
-while changing `<your-local-path>` to the path you want to mount in the host machine.
 
 9. Finally, we only need to specify the environment variables.
 ```yaml
@@ -317,28 +316,13 @@ version: "3.7"
 
 services:
    app:
-     image: app-multi:0.0.1
+     image: <your-image-name-and-tag>
      ports:
         - 8082:8080
+     environment:
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: videos
    mysql:
-    image: mysql:5.7
-    volumes:
-       - mysql-data:/var/lib/mysql
-    environment:
-       MYSQL_ROOT_PASSWORD: secret
-       MYSQL_DATABASE: videos
-volumes:
-   mysql-data:
-```
-
-At this point, our complete `docker-compose.yml` should look like this:
-```yaml
-version: "3.7"
-
-services:
-  app:
-    # The app service definition
-  mysql:
     image: mysql:5.7
     volumes:
        - mysql-data:/var/lib/mysql
@@ -351,12 +335,11 @@ volumes:
 
 #### Run the application stack
 
-Now that we have our docker-compose.yml file, we can start it up!
+Now that we have our `docker-compose.yaml` file, we can start it up!
 
 10. Make sure no other copies of the app/db are running first (`docker ps` and `docker rm -f <ids>`).
 11. Start up the application stack using the `docker-compose up` command.
 12. When you’re ready to tear it all down, simply run `docker-compose down`.
-
 
 ## Security scanning
 
@@ -364,48 +347,3 @@ When you have built an image, it is a good practice to scan it for security vuln
 
 You must be logged in to Docker Hub to scan your images.
 Run the command `docker scan --login`, and then scan your images using `docker scan <image-name>`.
-
-## Inspect Docker networking options
-
-#### Use `host` networking (only works on Linux hosts)
-
-If you use the `host` network mode for a container, that container’s network stack is not isolated from the Docker host (the container shares the host’s networking namespace),
-and the container does not get its own IP-address allocated.
-Generally, host mode networking can be useful to optimize performance, as it does not require network address translation (NAT), and no “userland-proxy” is created for each port. But keep in mind that using host mode has significant security implication!
-
-1. Run the Nginx webserver in the host network
-```shell
-docker run --network host --name nginx-1 nginx:latest
-```
-2. Visit the webserver in `http://localhost`.
-
-
-## Push docker image to AWS Elastic Container Registry (ECR)
-
-Amazon Elastic Container Registry (Amazon ECR) is an AWS managed Docker container image registry service that is secure, scalable, and reliable.
-
-A **repository** is where you store your Docker images in Amazon ECR\. Each time you push or pull an image from Amazon ECR, you specify the repository and the registry location which informs where to push the image to or where to pull it from\.
-
-1. Open the Amazon ECR console at [https://console\.aws\.amazon\.com/ecr/](https://console.aws.amazon.com/ecr/).
-
-2. Choose **Get Started**\, or **Repositories** and **Create repository**.
-
-3. For **Visibility** settings, choose **Private**.
-
-4. For **Repository name**, specify a name for the repository: `<your-name>-supportBot`, while changing `<your-name>` to your name.
-
-6. Choose **Create repository**\.
-
-**Build, tag, and push a Docker image**
-
-1. Select the repository you created and choose **View push commands** to view the steps to push an image to your new repository\.
-
-1. Run the login command that authenticates your Docker client to your registry by using the command from the console in a terminal window\. This command provides an authorization token that is valid for 12 hours\.
-
-1. Build the image and tag it for your new repository\. Using the docker build command from the console in a terminal window\. Make sure that you are in the same directory as your Dockerfile\.
-
-1. Tag the image with your Amazon ECR registry URI and your new repository by pasting the docker tag command from the console into a terminal window\. The console command assumes that your image was built from a Dockerfile in the previous step\. If you did not build your image from a Dockerfile, replace the first instance of `repository:latest` with the image ID or image name of your local image to push\.
-
-1. Push the newly tagged image to your repository by using the docker push command in a terminal window\.
-
-1. Choose **Close**\.
