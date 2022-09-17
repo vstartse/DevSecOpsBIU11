@@ -1,70 +1,100 @@
 # Git Basics (commit, diff, branches)
 
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-9.
-10.
-11.
-12.
-13.
-14.
-15.
-16.
+1. echo "1" >> abc.txt
+2. git status (Red)
+3. Red
+4. git add abc.txt
+    * git status - green
+    * pycharm - green
+    * git commit -m "initial commit"
+5. echo "2" >> abc.txt
+6. Color is red
+    * In step 2 git didnt track abc.txt as it was just created
+    * Now git shows that the file was modified
+7. git diff main
+8. Nothing in stage, so no difference between stage and main
+9. not a valid git command
+    * no revision with name "stage2"
+    * no path with name "stage2"
+10. git add abc.txt
+11. git diff prints nothing as there is no difference between stage and working tree
+12. git diff --staged
+13. echo "3" >> abc.txt
+14. No
+    * Because abc.txt has only "1" in main, "1,2" in stage and "1,2,3" in working tree
+15. Once for the staged version and once for the working tree version
+16. git reset
 
 # Resolve conflicts
 
-1.
-2.
-3.
-4.
-5.
-   1.
-   2.
-   3.
-   4.
-   5.
-6.
+1.  git branch
+2.  git checkout -b feature/lambda_migration
+3.  git merge feature/version1
+4.  **actions in pycharm**
+5.  **actions in pycharm**
+   1.   **actions in pycharm**
+   2.   **actions in pycharm**
+   3.   **actions in pycharm**
+   4.   **actions in pycharm**
+   5.   **actions in pycharm**
+6.  There are 2 commits added, 1 for each merge
+    * Merge branch 'feature/version1' into feature/lambda_migration
+    * Merge branch 'feature/version2' into feature/lambda_migration
 
 # Cherry picking
 
-1.
-2.
-3.
-    1.
-    2.
-4.
-5.
+1.  git checkout main
+    * git checkout -b feature/lambda_migration2
+2.  **actions in pycharm**
+3.  **actions in pycharm**
+    1.  **actions in pycharm**
+    2.  **actions in pycharm**
+4.  .env and config.json
+5.  two separate files - doesnt matter which order
 
 
 # Changes in working tree and switch branches
 
-1.
-2.
-3.
-4.
-5.
-6.
+1.  git branch
+2.  echo "line 1" >> take.txt
+    * echo "line 2" >> take.txt
+    * echo "line 3" >> take.txt
+3.  git checkout dev
+    * first error - local changes to "abc.txt" will be overwritten
+        git recommends to commit or stash the changes
+    * second error - untracked working tree "take.txt" file will be overwritten
+        git recommends to move or remove the file
+4.  **actions in pycharm**
+5.  no
+6.  checkout back to feature/lambda_migration2
+    * take.txt disappeared
+    * force checkout resets the working tree of the branch
 
 # Reset
 
-1.
-2.
-   1.
-   2.
-   3.
-   4.
-3.
+1.  git checkout reset_question
+2.  
+   1.   git reset --soft HEAD~1
+        * 10.txt file moved to stage
+        * move HEAD one commit back preserving both index and working tree
+   2.   git reset --mixed HEAD~1
+        * 10.txt and 9.txt were moved to working tree and are untracked
+        * move HEAD one commit back preserving only the working tree
+   3.   git reset --hard HEAD~1
+        * 8.txt was removed
+        * 9.txt and 10.txt are still untracked in the working tree
+        * move HEAD one commit back resetting both index and working tree
+   4.   git revert HEAD~1
+        * commit window prompted in terminal
+        * 6.txt was deleted
+        * move HEAD one commit back and create a special commit for this action
+3. HEAD~1 points to the previous commit (one commit back from HEAD)
 
 
 # Working with GitHub
 
-1.
-2.
-3.
-4.
+1.  created "git-exercise-repo"  
+2.  git remote add origin https://github.com/vstartse/git-exercise-repo.git
+3.  git push -u origin main
+    * git push -u origin dev
+4.  https://github.com/vstartse/git-exercise-repo
