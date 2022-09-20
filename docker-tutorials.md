@@ -201,6 +201,7 @@ If a directory in the container is **mounted**, changes in that directory are al
 docker run -p 8080:8080 -v "$(pwd)/data:/app/data" my_app:0.0.2 
 ```
 Note the `-v "$(pwd)/data:/app/data"` which mounts the data directory from the host into the `/app/data` directory in the container.
+
 3. Test your app and verify that the data persists.
 
 ## Multiple-container app
@@ -222,23 +223,28 @@ So, how do we allow one container to talk to another? Networking.
 ```shell
 docker network create my_app_net
 ```
+
 2. Start a MySQL container and attach it to the network. We’re also going to define a few environment variables that the database will use to initialize the database:
 ```shell
 docker run --network my_app_net --network-alias mysql -v $(pwd)/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=videos mysql:5.7
 ```
+
 3. Verify MySql is accessible from another container. To figure it out, we’re going to make use of the [nicolaka/netshoot](https://github.com/nicolaka/netshoot) container, which ships with a lot of tools that are useful for troubleshooting or debugging networking issues.
 ```shell
 docker run -it --network my_app_net nicolaka/netshoot
 ```
+
 4. Inside the container, we’re going to use the dig command, which is a useful DNS tool. We’re going to look up the IP address for the hostname mysql.
 ```shell
 dig mysql
 ```
 And make sure that `mysql` is being resolved to the IP address of the container.
+
 5. Using the above `docker build` command, build a new image from the app **located in branch `app-multi-containers`** (pick the Dockerfile from main branch if needed), run it using `docker run`. Things to notice:
    1. Both containers should run on the `my_app_net` network.
    2. Your app should listen to port `8082` in the host machine.
    3. Your app is expecting to get two environment variables (search `os.environ` in )
+
 6. Test the app.
 
 ## Docker compose
@@ -250,11 +256,14 @@ Let's deploy our app using Docker compose.
 ```shell
 docker-compose version
 ```
+
 2. At the root of the app project, create a file named `docker-compose.yaml`.
+
 3. In the compose file, we’ll start off by defining the schema version. In most cases, it’s best to use the latest supported version.
 ```yaml
 version: "3.7"
 ```
+
 4. Next, we’ll define the list of services (or containers) we want to run as part of our application.
 ```yaml
 version: "3.7"
@@ -272,6 +281,7 @@ services:
   app:  # we can choose any name for our service
     image: <your-image-name-and-tag>
 ```
+
 6. Let’s migrate the `-p 8082:8080` part of the command by defining the ports for the service.
 ```yaml
 version: "3.7"
@@ -295,6 +305,7 @@ services:
   mysql:
     image: mysql:5.7
 ```
+
 8. Next, we’ll define the volume mapping. We need to define the volume in the top-level `volumes:` section and then specify the mountpoint in the service config.
 ```yaml
 version: "3.7"
