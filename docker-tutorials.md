@@ -156,7 +156,11 @@ Now that we have an image, let’s run the application. To do so, we will use th
 
 3. Start your container by:
 ```shell
-docker run -d -p 8080:8080 my_app:0.0.1
+docker run --rm --name my_app-1 -p 8080:8080 my_app:0.0.1
+```
+or if you want to run the container in the background:
+```shell
+docker run -d --rm --name my_app-1 -p 8080:8080 my_app:0.0.1
 ```
 Note the `-d` which runs the container in background, releasing the CMD terminal.
 
@@ -172,7 +176,7 @@ docker build -t my_app:0.0.2 .
 
 7. Let’s start a new container using the updated code.
 ```shell
-docker run -d -p 8080:8080 my_app:0.0.2
+docker run --rm --name my_app-1 -p 8080:8080 my_app:0.0.2
 ```
 
 **Uh oh!** You probably saw an error from the docker daemon.
