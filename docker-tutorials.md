@@ -247,7 +247,7 @@ And make sure that `mysql` is being resolved to the IP address of the container.
 5. Using the above `docker build` command, build a new image from the app **located in branch `app-multi-containers`** (pick the Dockerfile from main branch if needed), run it using `docker run`. Things to notice:
    1. Both containers should run on the `my_app_net` network.
    2. Your app should listen to port `8082` in the host machine.
-   3. Your app is expecting to get two environment variables (search `os.environ` in )
+   3. Your app is expecting to get two environment variables (search `os.environ` in `app.py`)
 
 6. Test the app.
 
@@ -335,8 +335,8 @@ services:
      ports:
         - 8082:8080
      environment:
-        MYSQL_ROOT_PASSWORD: secret
-        MYSQL_DATABASE: videos
+        DB_ROOT_PASS: secret
+        DB_NAME: videos
    mysql:
     image: mysql:5.7
     volumes:
@@ -356,9 +356,64 @@ Now that we have our `docker-compose.yaml` file, we can start it up!
 11. Start up the application stack using the `docker-compose up` command.
 12. When you’re ready to tear it all down, simply run `docker-compose down`.
 
+
+## Create and manage volumes
+
+Unlike a bind mount, you can create and manage volumes outside the scope of any container.
+
+1. Create a volume
+```shell
+docker volume create my-vol
+```
+
+2. Inspect the volume to see the actual mounted path
+```shell
+docker volume inspect my-vol
+```
+
+3. Let's run the `nginx` image with mounted volume:
+```shell
+docker run --name=nginxtest -v nginx-vol:/usr/share/nginx/html nginx:latest
+```
+
+4. For some development applications, the container only needs read access to the data (e.g. multiple containers mount the same volume). This example modifies the one above but mounts the directory as a read-only volume, by adding `ro` to the list of options:
+```shell
+docker run -d --name=nginxtest -v nginx-vol:/usr/share/nginx/html:ro nginx:latest
+```
+
 ## Security scanning
 
 When you have built an image, it is a good practice to scan it for security vulnerabilities using the `docker scan` command. Docker has partnered with [Snyk](https://snyk.io/) to provide the vulnerability scanning service.
 
 You must be logged in to Docker Hub to scan your images.
 Run the command `docker scan --login`, and then scan your images using `docker scan <image-name>`.
+
+### Or alternatively using `snyk` directly 
+
+The [Snyk](https://docs.snyk.io/products/snyk-container/snyk-cli-for-container-security) Container command line interface helps you find and fix vulnerabilities in container images on your local machine.
+
+1. You must first to [Sign up for Snyk account](https://docs.snyk.io/getting-started/create-a-snyk-account).
+2. Install [Snyk CLI](https://docs.snyk.io/snyk-cli/install-the-snyk-cli).
+3. Get you API token from your [Account Settings](https://app.snyk.io/account) page.
+4. Use `sync auth` to authenticate in Snyk API. Alternatively, set the `SNYK_TOKEN` environment variable with the API token as a value, you can easily [scan docker images](https://docs.snyk.io/products/snyk-container) for vulnerabilities:
+```shell
+# will scan ubuntu docker image from DockerHub
+snyk container test ubuntu 
+
+# will alarm for `high` issue and above 
+snyk container test ubuntu --severity-threshold=high
+ 
+# will scan a local image my-image:latest. The --file=Dockerfile can add more context to the security scanning. 
+snyk container test my-image:latest --file=Dockerfile
+```
+
+## Use the default bridge network
+
+Tutorial reference: https://docs.docker.com/network/network-tutorial-standalone/#use-the-default-bridge-network
+
+* Up to **Use user-defined bridge networks**, not including
+
+## Networking using the host network (optional)
+
+Tutorial reference: https://docs.docker.com/network/network-tutorial-host/
+
