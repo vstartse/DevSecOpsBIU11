@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-app
+  labels:
+    app: youtube-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: youtube-app
+  template:
+    metadata:
+      labels:
+        app: youtube-app
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: youtube-app
+          image: <docker-image-name>:<tag>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtube-app-service
+spec:
+  selector:
+    app: youtube-app
+  ports:
+    - port: 8080
+      targetPort: 8080
