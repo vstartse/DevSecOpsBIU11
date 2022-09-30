@@ -156,7 +156,11 @@ Now that we have an image, let’s run the application. To do so, we will use th
 
 3. Start your container by:
 ```shell
-docker run -d -p 8080:8080 my_app:0.0.1
+docker run --rm --name my_app-1 -p 8080:8080 my_app:0.0.1
+```
+or if you want to run the container in the background:
+```shell
+docker run -d --rm --name my_app-1 -p 8080:8080 my_app:0.0.1
 ```
 Note the `-d` which runs the container in background, releasing the CMD terminal.
 
@@ -172,7 +176,7 @@ docker build -t my_app:0.0.2 .
 
 7. Let’s start a new container using the updated code.
 ```shell
-docker run -d -p 8080:8080 my_app:0.0.2
+docker run --rm --name my_app-1 -p 8080:8080 my_app:0.0.2
 ```
 
 **Uh oh!** You probably saw an error from the docker daemon.
@@ -201,6 +205,7 @@ If a directory in the container is **mounted**, changes in that directory are al
 docker run -p 8080:8080 -v "$(pwd)/data:/app/data" my_app:0.0.2 
 ```
 Note the `-v "$(pwd)/data:/app/data"` which mounts the data directory from the host into the `/app/data` directory in the container.
+
 3. Test your app and verify that the data persists.
 
 ## Multiple-container app
@@ -222,23 +227,28 @@ So, how do we allow one container to talk to another? Networking.
 ```shell
 docker network create my_app_net
 ```
+
 2. Start a MySQL container and attach it to the network. We’re also going to define a few environment variables that the database will use to initialize the database:
 ```shell
 docker run --network my_app_net --network-alias mysql -v $(pwd)/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=videos mysql:5.7
 ```
+
 3. Verify MySql is accessible from another container. To figure it out, we’re going to make use of the [nicolaka/netshoot](https://github.com/nicolaka/netshoot) container, which ships with a lot of tools that are useful for troubleshooting or debugging networking issues.
 ```shell
 docker run -it --network my_app_net nicolaka/netshoot
 ```
+
 4. Inside the container, we’re going to use the dig command, which is a useful DNS tool. We’re going to look up the IP address for the hostname mysql.
 ```shell
 dig mysql
 ```
 And make sure that `mysql` is being resolved to the IP address of the container.
+
 5. Using the above `docker build` command, build a new image from the app **located in branch `app-multi-containers`** (pick the Dockerfile from main branch if needed), run it using `docker run`. Things to notice:
    1. Both containers should run on the `my_app_net` network.
    2. Your app should listen to port `8082` in the host machine.
-   3. Your app is expecting to get two environment variables (search `os.environ` in )
+   3. Your app is expecting to get two environment variables (search `os.environ` in `app.py`)
+
 6. Test the app.
 
 ## Docker compose
@@ -250,11 +260,14 @@ Let's deploy our app using Docker compose.
 ```shell
 docker-compose version
 ```
+
 2. At the root of the app project, create a file named `docker-compose.yaml`.
+
 3. In the compose file, we’ll start off by defining the schema version. In most cases, it’s best to use the latest supported version.
 ```yaml
 version: "3.7"
 ```
+
 4. Next, we’ll define the list of services (or containers) we want to run as part of our application.
 ```yaml
 version: "3.7"
@@ -272,6 +285,7 @@ services:
   app:  # we can choose any name for our service
     image: <your-image-name-and-tag>
 ```
+
 6. Let’s migrate the `-p 8082:8080` part of the command by defining the ports for the service.
 ```yaml
 version: "3.7"
@@ -295,6 +309,7 @@ services:
   mysql:
     image: mysql:5.7
 ```
+
 8. Next, we’ll define the volume mapping. We need to define the volume in the top-level `volumes:` section and then specify the mountpoint in the service config.
 ```yaml
 version: "3.7"
@@ -320,8 +335,8 @@ services:
      ports:
         - 8082:8080
      environment:
-        MYSQL_ROOT_PASSWORD: secret
-        MYSQL_DATABASE: videos
+        DB_ROOT_PASS: secret
+        DB_NAME: videos
    mysql:
     image: mysql:5.7
     volumes:
@@ -341,9 +356,64 @@ Now that we have our `docker-compose.yaml` file, we can start it up!
 11. Start up the application stack using the `docker-compose up` command.
 12. When you’re ready to tear it all down, simply run `docker-compose down`.
 
+
+## Create and manage volumes
+
+Unlike a bind mount, you can create and manage volumes outside the scope of any container.
+
+1. Create a volume
+```shell
+docker volume create my-vol
+```
+
+2. Inspect the volume to see the actual mounted path
+```shell
+docker volume inspect my-vol
+```
+
+3. Let's run the `nginx` image with mounted volume:
+```shell
+docker run --name=nginxtest -v nginx-vol:/usr/share/nginx/html nginx:latest
+```
+
+4. For some development applications, the container only needs read access to the data (e.g. multiple containers mount the same volume). This example modifies the one above but mounts the directory as a read-only volume, by adding `ro` to the list of options:
+```shell
+docker run -d --name=nginxtest -v nginx-vol:/usr/share/nginx/html:ro nginx:latest
+```
+
 ## Security scanning
 
 When you have built an image, it is a good practice to scan it for security vulnerabilities using the `docker scan` command. Docker has partnered with [Snyk](https://snyk.io/) to provide the vulnerability scanning service.
 
 You must be logged in to Docker Hub to scan your images.
 Run the command `docker scan --login`, and then scan your images using `docker scan <image-name>`.
+
+### Or alternatively using `snyk` directly 
+
+The [Snyk](https://docs.snyk.io/products/snyk-container/snyk-cli-for-container-security) Container command line interface helps you find and fix vulnerabilities in container images on your local machine.
+
+1. You must first to [Sign up for Snyk account](https://docs.snyk.io/getting-started/create-a-snyk-account).
+2. Install [Snyk CLI](https://docs.snyk.io/snyk-cli/install-the-snyk-cli).
+3. Get you API token from your [Account Settings](https://app.snyk.io/account) page.
+4. Use `sync auth` to authenticate in Snyk API. Alternatively, set the `SNYK_TOKEN` environment variable with the API token as a value, you can easily [scan docker images](https://docs.snyk.io/products/snyk-container) for vulnerabilities:
+```shell
+# will scan ubuntu docker image from DockerHub
+snyk container test ubuntu 
+
+# will alarm for `high` issue and above 
+snyk container test ubuntu --severity-threshold=high
+ 
+# will scan a local image my-image:latest. The --file=Dockerfile can add more context to the security scanning. 
+snyk container test my-image:latest --file=Dockerfile
+```
+
+## Use the default bridge network
+
+Tutorial reference: https://docs.docker.com/network/network-tutorial-standalone/#use-the-default-bridge-network
+
+* Up to **Use user-defined bridge networks**, not including
+
+## Networking using the host network (optional)
+
+Tutorial reference: https://docs.docker.com/network/network-tutorial-host/
+
