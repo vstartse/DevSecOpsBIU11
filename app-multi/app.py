@@ -41,7 +41,7 @@ def load():
     return 'OK!'
 
 
-@app.route("/heath")
+@app.route("/health")
 def health():
     return 'OK'
 

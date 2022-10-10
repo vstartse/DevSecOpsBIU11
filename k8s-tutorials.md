@@ -193,44 +193,172 @@ We would like to deploy it in the k8s cluster.
 kubectl apply -f k8s/mysql-secret.yaml
 ```
 5. Deploy the MySQL deployment by applying `mysql-deployment.yaml` configuration file.
-6. Test your app.
+6. Test your app (see **Visit the app** section below).
 
-7. Now let's say we want to allow maximum of 50 connection to our DB. We would like to find a useful way to "inject" this config to our pre-built `mysql:5.7` image. For that, the [ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/) object can assist.
-   In the `mysql` Docker image, custom configurations for MySQL can be placed in `/etc/mysql/mysql.conf.d` directory, any file ends with `.cnf` under this directory, will be applied as an additional configurations to MySQL. But how can we "insert" a custom file to the image? keep reading...
+7. Now let's say we want to allow maximum of 50 connection to our DB. We would like to find a useful way to "inject" this config to our pre-built `mysql:5.7` image (we surely don't want to build the MySQL image ourselves). For that, the [ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/) object can assist.
+   In the `mysql` Docker image, custom configurations for the MySQL server can be placed in `/etc/mysql/mysql.conf.d` directory, any file ends with `.cnf` under that directory, will be applied as an additional configurations to MySQL. But how can we "insert" a custom file to the image? keep reading...
 8. Review the ConfigMap object under `mysql-config.yaml`. And apply it.
 9. Comment **in** the two snippets in `mysql-deployment.yaml` and apply the changes. 
 
-[comment]: <> (## Visit the app )
+## Visit the app 
 
-[comment]: <> (```text)
+How can we visit an app running in the cluster?
 
-[comment]: <> (kubectl exec )
+#### Using `kubectl`
 
-[comment]: <> (kubectl port-forward)
+You can use `kubectl port-forward` command to forward specific pod and port to you local machine, so you can visit the app under the `localhost:<port>` address.
+This type of connection can be useful for pod debugging and obviously should not be used outside the boarders of the development team.
 
-[comment]: <> (nodeport &#40; 3 types of services&#41;)
+1. Perform
+```shell
+kubectl port-forward svc/<service-name> <local-port>:<service-port> 
+```
+In our case:
+   - `<service-name>` is `youtube-app-service`.
+   - `<service-port>` is `8080`.
+   - `<local-port>` can be `8083` (or any other free port on your local machine.
 
-[comment]: <> (```)
+#### Using Service 
 
-[comment]: <> (## The [StatefulSet]&#40;&#41; and Data persistence)
+As you are already know, k8s [Service](https://kubernetes.io/docs/concepts/services-networking/service/) is an abstract way to expose an application running on a set of Pods as a network service.
+Although each Pod has a unique IP address, those IPs are not exposed outside the cluster without a Service
+Services can be exposed in different ways by specifying a `type` in the ServiceSpec. We will review two types:
 
-[comment]: <> (## Helm)
+- `ClusterIP` (default) - Exposes the Service on an internal IP in the cluster. This type makes the Service only reachable from within the cluster.
+- `NodePort` - Exposes the Service on some port of each **Node** in the cluster. Makes a Service accessible from outside the cluster using <NodeIP>:<NodePort>.
 
-[comment]: <> (## Fluentd )
+![](img/service-k8s.png)
 
-[comment]: <> (- service account)
+1. Under `k8s/youtube-chat-app-multi.yaml` edit the `youtube-app-service` service object to use the `NodePort` service type:
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: youtube-app-service
+spec:
+  type: NodePort 
+  selector:
+    app: youtube-app
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30007
+```
+2. Apply the change.
+3. Use `minikube ip` to get the IP of Minikube "node" and visit the app in `http://<node-ip>:30007`
 
-[comment]: <> (- role)
+## Data persistence and the [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
 
-[comment]: <> (- rolebinding)
+The problem: the data of `mysql` deployment is not persistent.
 
-[comment]: <> (## Prometheus and Grafana)
+### 1st try: [Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
+
+A **PersistentVolume (PV)** is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using [Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes/).
+
+In this exercise, we create a `hostPath` PersistentVolume. Kubernetes supports hostPath for development and testing on a single-node cluster. A hostPath PersistentVolume uses a file or directory **on the Node** to emulate attached storage.
+In a production cluster, you would not use hostPath. Instead, a cluster administrator would provision a network resource like a Google Compute Engine persistent disk, an NFS share, or an Amazon Elastic Block Store volume.
+
+1. Review and apply `k8s/mysql-pv.yaml`. 
+   The configuration file specifies that the volume is at `/mnt/data` on the cluster's Node. The configuration also specifies a size of 3GB and an access mode of `ReadWriteOnce`, which means the volume can be mounted as read-write by a **single Node**.
+2. View information about the PersistentVolume:
+```shell
+kubectl get pv mysql-pv-volume
+```
+The output shows that the PersistentVolume has a `STATUS` of `Available`. This means it has not yet been bound to a PersistentVolumeClaim.
+
+Pods use **PersistentVolumeClaims** to request physical storage. We create a PersistentVolumeClaim that _requests_ a volume of at least 1GB that can provide read-write access for at least one Node.
+
+3. Review and apply `k8s/mysql-pv-claim.yaml`
+   After you create the PersistentVolumeClaim, the Kubernetes control plane looks for a PersistentVolume that satisfies the claim's requirements. If the control plane finds a suitable PersistentVolume with the same StorageClass, it binds the claim to the volume.
+
+4. In `k8s/mysql-deployment.yaml` enter the following mount and volumes:
+```yaml
+volumeMounts:
+   - name: config-volume
+     mountPath: /etc/mysql/mysql.conf.d
+   - name: mysql-data
+     mountPath: /var/lib/mysql
+```
+
+and 
+
+```yaml
+volumes:
+  - name: config-volume
+    configMap:
+      name: mysql-config
+  - name: mysql-data
+    persistentVolumeClaim:
+      claimName: mysql-pv-claim
+```
+5. Apply the changes. 
+
+While this solution works for a standalone DB, it won't work in case we want to run MySQL in multiple instance (and you want to...).
 
 
-[comment]: <> (# K8S exercise )
+### 2nd (and successful) try: statefulset
 
-[comment]: <> (- multi-app &#40;worker and webserver&#41;)
+delete all resources of mysql
 
-[comment]: <> (- helm rabbitmq )
+![](img/multi-az-db-cluster.png)
 
-[comment]: <> (- autoscale workers)
+deploy stateful 
+
+
+## Helm
+
+Helm is the package manager for Kubernetes
+The main big 3 concepts of helm are:
+
+- A **Chart** is a Helm package. It contains all the resource definitions necessary to run an application, tool, or service inside of a Kubernetes cluster.
+- A **Repository** is the place where charts can be collected and shared.
+- A **Release** is an instance of a chart running in a Kubernetes cluster.
+
+[Install](https://helm.sh/docs/intro/install/) the Helm cli if you don't have.
+
+### Deploy MySQL using Helm
+
+1. Add the bitnami Helm repo to your local machine
+```shell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+3. Review `k8s/postgres-values.yaml`, change values or [add parameters](https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters) according to your need.
+4. Install the [postgresql](https://bitnami.com/stack/postgresql/helm) chart
+```shell
+helm install -f k8s/postgres-values.yaml --namespace <your-ns> pg bitnami/postgresql
+```
+
+## Fluentd 
+
+
+## Stream Pod logs outside the cluster (to CloudWatch)
+
+Fluentd is an open source data collector for unified logging layer. Fluentd allows you to unify data collection and consumption for a better use and understanding of data.
+We will deploy the Fluentd chart to collect containers logs to send them to CloudWatch
+
+1. Visit the Fluentd Helm chart https://github.com/fluent/helm-charts/tree/main/charts/fluentd
+2. Add the helm repo
+```shell
+helm repo add fluent https://fluent.github.io/helm-charts
+```
+3. Install the Fluentd chart by:
+```shell
+helm install fluentd --namespace <your-ns> -f k8s/fluentd/values.yaml fluent/fluentd
+```
+
+- service account
+
+- role
+
+- rolebinding
+
+
+# K8S exercise 
+
+- Prometheus and Grafana
+
+- multi-app (worker and webserver)
+
+- helm rabbitmq 
+
+- autoscale workers
