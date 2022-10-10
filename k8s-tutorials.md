@@ -73,7 +73,11 @@ A ReplicaSet's purpose is to maintain a stable set of replica Pods running at an
 > In order to complete the following demo, you need to install 
 > a Metric server in the cluster.
 > Metrics Server collects resource metrics (such as CPU and Memory usage) from Kubelets and exposes them in Kubernetes apiserver.
-> Install is by 
+> If you are Minikube users, install it by the below command:
+> ```text
+> minikube addons enable metrics-server
+> ```
+> Or alternatively (for any other k8s cluster) by:
 > ```shell
 > kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 > ```
@@ -136,19 +140,36 @@ containers:
 
 A HorizontalPodAutoscaler (HPA) automatically updates a workload resource, with the aim of automatically scaling the workload to match demand.
 
-1. To simulate a load on the app, we will use the `/load` endpoint defined in the `app.py` file (review it and make sure you understand what it does). 
-2. Build the image and deploy it in the cluster (update the `youtube-chat-app-deployment.yaml` according to the new image tag to apply the changes). 
-3. Now that the server is running with the new endpoint, create the autoscaler:
+1. First, let's stop and start the cluster with an extra configuration that will help us to monitor our pods in realtime:
+```shell
+minikube stop
+
+# you may need to change the --driver to the driver the cluster is running on. 
+minikube start --driver=docker  --extra-config=kubelet.housekeeping-interval=10s
+```
+2. To simulate a load on the app, we will use the `/load` endpoint defined in the `app.py` file (review it and make sure you understand what it does). 
+3. Under `youtube-chat-app-deployment.yaml` add the following `resource` definition for the `youtube-app` container:
+```yaml
+- name: youtube-app
+  image: <docker-image-name>:<tag>
+  resources:
+     limits:
+        cpu: "200m"
+     requests:
+        cpu: "100m"
+```
+3. Build the image and deploy it in the cluster (update the `youtube-chat-app-deployment.yaml` according to the new image tag to apply the changes). 
+4. Now that the server is running with the new endpoint, create the autoscaler:
 ```shell
 kubectl apply -f k8s/youtube-chat-app-autoscale.yaml
 ```
 4. Next, see how the autoscaler reacts to increased load. To do this, you'll start a different Pod to act as a client. The container within the client Pod runs in an infinite loop, sending queries to the php-apache service.
 ```shell
-# Run this in a separate terminal
-# so that the load generation continues and you can carry on with the rest of the steps
-kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.1; do wget -q -O- http://youtube-app-service:8080/load; done"
+# Run this in a separate terminal so that the load generation continues and you can carry on with the rest of the steps
+kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://youtube-app-service:8080/load; done"
 ```
-5. (Optional) Perform rolling update **during scale**.
+5. Watch the HPA in action by `kubectl get hpa -w`.
+6. (Optional) Perform a rolling update **during scale**.
 
 [Read more](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/) to see how k8s can scale based on _packets per second_, _requests per second_ or even metrics not related to Kubernetes objects (such as messages in queue).
 
@@ -160,7 +181,7 @@ Recall the multi-app architecture we created using Docker compose:
 
 We would like to deploy it in the k8s cluster. 
 
-**Before we begin, clean your cluster from resources.** 
+**Before we begin, clean your cluster from resources.** You can stop and delete the cluster by `minikube stop && minikube delete`, and then start over again a new fresh cluster. 
 
 ### The YouTube chat app
 
@@ -178,3 +199,38 @@ kubectl apply -f k8s/mysql-secret.yaml
    In the `mysql` Docker image, custom configurations for MySQL can be placed in `/etc/mysql/mysql.conf.d` directory, any file ends with `.cnf` under this directory, will be applied as an additional configurations to MySQL. But how can we "insert" a custom file to the image? keep reading...
 8. Review the ConfigMap object under `mysql-config.yaml`. And apply it.
 9. Comment **in** the two snippets in `mysql-deployment.yaml` and apply the changes. 
+
+[comment]: <> (## Visit the app )
+
+[comment]: <> (```text)
+
+[comment]: <> (kubectl exec )
+
+[comment]: <> (kubectl port-forward)
+
+[comment]: <> (nodeport &#40; 3 types of services&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (## The [StatefulSet]&#40;&#41; and Data persistence)
+
+[comment]: <> (## Helm)
+
+[comment]: <> (## Fluentd )
+
+[comment]: <> (- service account)
+
+[comment]: <> (- role)
+
+[comment]: <> (- rolebinding)
+
+[comment]: <> (## Prometheus and Grafana)
+
+
+[comment]: <> (# K8S exercise )
+
+[comment]: <> (- multi-app &#40;worker and webserver&#41;)
+
+[comment]: <> (- helm rabbitmq )
+
+[comment]: <> (- autoscale workers)

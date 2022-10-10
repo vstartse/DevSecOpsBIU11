@@ -22,13 +22,13 @@ def home():
 def load():
     import random
     x = 0.0001
-    for i in range(1000000):
+    for i in range(10000):
         x += random.random()**0.5
 
     return 'OK!'
 
 
-@app.route("/heath")
+@app.route("/health")
 def health():
     return 'OK'
 
