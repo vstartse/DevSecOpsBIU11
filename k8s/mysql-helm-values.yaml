@@ -1,0 +1,18 @@
+#global:
+#  storageClass: standard
+#primary:
+#  persistence:
+#    storageClass: standard
+#    accessModes: ["ReadWriteMany"]
+#secondary:
+#  persistence:
+#    storageClass: standard
+#    accessModes: [ "ReadWriteMany" ]
+primary:
+  startupProbe:
+    initialDelaySeconds: 600
+secondary:
+  startupProbe:
+    initialDelaySeconds: 600
+architecture: replication
+
