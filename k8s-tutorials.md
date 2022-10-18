@@ -161,7 +161,7 @@ minikube start --driver=docker  --extra-config=kubelet.housekeeping-interval=10s
 3. Build the image and deploy it in the cluster (update the `youtube-chat-app-deployment.yaml` according to the new image tag to apply the changes). 
 4. Now that the server is running with the new endpoint, create the autoscaler:
 ```shell
-kubectl apply -f k8s/youtube-chat-app-autoscale.yaml
+kubectl apply -f k8s/youtube-chat-app-autoscaler.yaml
 ```
 4. Next, see how the autoscaler reacts to increased load. To do this, you'll start a different Pod to act as a client. The container within the client Pod runs in an infinite loop, sending queries to the php-apache service.
 ```shell
