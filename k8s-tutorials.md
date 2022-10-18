@@ -190,6 +190,7 @@ We would like to deploy it in the k8s cluster.
 3. Deploy it using the `youtube-chat-app-multi.yaml` configuration file (does it work? why?).
 4. We would like to create a cluster [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) object to store the root user password for the MySQL database. Review the secret object in `k8s/mysql-secret.yaml` and apply it:
 ```shell
+change '<docker-image-name>:<tag>' to 'public.ecr.aws/r7m7o9d4/myapp:0.0.5'
 kubectl apply -f k8s/mysql-secret.yaml
 ```
 5. Deploy the MySQL deployment by applying `mysql-deployment.yaml` configuration file.
