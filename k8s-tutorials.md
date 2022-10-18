@@ -151,7 +151,7 @@ minikube start --driver=docker  --extra-config=kubelet.housekeeping-interval=10s
 3. Under `youtube-chat-app-deployment.yaml` add the following `resource` definition for the `youtube-app` container:
 ```yaml
 - name: youtube-app
-  image: <docker-image-name>:<tag>
+  image: public.ecr.aws/r7m7o9d4/myapp:0.0.5
   resources:
      limits:
         cpu: "200m"
