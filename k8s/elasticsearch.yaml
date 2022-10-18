@@ -40,10 +40,10 @@ spec:
      name: elasticsearch-storage
    spec:
      accessModes: [ "ReadWriteOnce" ]
-     storageClassName: standard-storage
+     storageClassName: standard
      resources:
        requests:
-         storage: 10Gi
+         storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
