@@ -426,13 +426,3 @@ Observe the service account used by the fluentd Pods, observe their ClusterRole 
 
 1. Review the objects in `grafana.yaml` and apply.
 2. Visit grafana service and configure the Elasticsearch database to view all cluster logs (you may need to upgrade elasticsearch Docker image version).
-
-## Split and deploy the Youtube chat app in microservices
-
-TBD 
-
-[comment]: <> (- Worker and web-server)
-
-[comment]: <> (- RabbitMQ )
-
-[comment]: <> (- Autoscale workers)
