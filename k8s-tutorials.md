@@ -307,7 +307,7 @@ The address of MySQL will be: `mysql-0.mysql-svc-hl.default.svc.cluster.local:33
 
 ## Helm
 
-Helm is the package manager for Kubernetes
+Helm is the package manager for Kubernetes.
 The main big 3 concepts of helm are:
 
 - A **Chart** is a Helm package. It contains all the resource definitions necessary to run an application, tool, or service inside of a Kubernetes cluster.
@@ -362,9 +362,9 @@ Here is an illustration of how Fluent works in the k8s cluster?
 
 ![](img/fluent.png)
 
-Fluentd runs in the cluster as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). A DaemonSet ensures that all nodes run a copy of a pod. That way, Fluentd can collect log information from every containerized applications easily in each k8s node.
+Fluentd runs in the cluster as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/). A DaemonSet ensures that all **nodes** run a copy of a **pod**. That way, Fluentd can collect log information from every containerized applications easily in each k8s node.
 
-We will deploy the Fluentd chart to collect containers logs to send them to Elasticsearch database.
+We will deploy the Fluentd chart to collect containers logs to send them to [Elasticsearch](https://www.elastic.co/what-is/elasticsearch) database.
 
 1. Visit the Fluentd Helm chart at https://github.com/fluent/helm-charts/tree/main/charts/fluentd
 2. Add the helm repo
@@ -380,6 +380,21 @@ helm install fluentd fluent/fluentd
 
 4. Watch and inspect the running containers under **Workloads** -> **DaemonSet**. Obviously, it doesn't work, as Fluent need to talk to an existed Elasticsearch database.  
 5. Elasticsearch db can be provisioned by applying `elasticsearch.yaml`.
+6. Create a YAML file called `fluentd-helm-values.yaml`. You should override the [following](https://github.com/fluent/helm-charts/blob/main/charts/fluentd/values.yaml#L379) default Helm value by:
+```yaml
+fileConfigs:
+  04_outputs.conf: |-
+    <label @OUTPUT>
+      <match **>
+        @type elasticsearch
+        host "<elasticsearch-host>"
+        logstash_format true
+        port <elasticsearch-port>
+      </match>
+    </label>
+```
+While replacing `<elasticsearch-host>` and `<elasticsearch-port>` with the hostname of Elasticsearch int the cluster.
+7. Finally, upgrade the `fluentd` release by `helm upgrade -f k8s/fluentd-helm-values.yaml fluentd fluent/fluentd` 
 
 ### Fluentd permissions in the cluster
 
