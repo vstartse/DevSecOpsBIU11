@@ -23,7 +23,7 @@ spec:
          args: [ '1000:1000', '/usr/share/elasticsearch/data' ]
      containers:
      - name: elasticsearch
-       image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+       image: elasticsearch:7.17.6
        env:
        - name: "discovery.type"
          value: "single-node"
@@ -56,6 +56,3 @@ spec:
     - name: http
       port: 9200
       targetPort: 9200
-    - name: http2
-      port: 9300
-      targetPort: 9300
